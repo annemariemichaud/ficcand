@@ -1,0 +1,11 @@
+#ignore les fichiers data et résultats
+
+Data/
+__pycache__/
+data.py
+erreur.txt
+ficCandidat.unl
+liste.xlsx
+setup.py
+tous_numen_simple.xlsx
+verification.txt
