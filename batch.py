@@ -1,15 +1,19 @@
-import openpyxl
+import pandas as pd
 import unicodedata
-import re
-#fichier de données contenant la liste des personnels avec leurs numens
-#RGPD -> attention à la conservation de ce fichier 
-from data import numens as numens
+
+
+def nettoyer_cedex(valeur):
+    valeur=valeur.strip()
+    if 'CEDEX'in valeur:
+        valeur=valeur[:-6]
+    return valeur
 
 def nettoyer_fichier(valeur):
+    #suppression des caractères accentués
+    valeur= unicodedata.normalize('NFKD', valeur)
+    valeur = u"".join([c for c in valeur if not unicodedata.combining(c)])
     #les valeurs saisies dans le fichier liste doit être nettoyées et normalisées pour pouvoir être comparées
     if valeur is not None:
-        #encodage du fichier
-        valeur=unicodedata.normalize('NFKD',valeur).encode('ASCII', 'ignore').decode('ASCII')
         #suppression des espaces avant et après la valeur
         valeur=valeur.strip()
         #passage de toutes les valeurs en caractères minuscules
@@ -17,13 +21,55 @@ def nettoyer_fichier(valeur):
         #remplacement des - en espace
         if valeur.find('-'):
             valeur=valeur.replace('-',' ')
+        if valeur.find('\''):
+            valeur=valeur.replace('\'',' ')
     return valeur
 
-#ouverture du fichier liste
-wb = openpyxl.load_workbook('liste.xlsx')
-#référencement de l'onglet actif 
-onglet = wb.active
+#ouverture du fichier tous numens
+numens = pd.read_excel('tous_numen_simple.xlsx')
+#transformation en dataframe
+df_numens=pd.DataFrame(numens)
+#renommage des colonnes
+df_numens.rename(columns={'Numen':'numen',"Nom d'usage":'nom_usage',"Nom patronymique":'nom_patronymique',"Prénom":"prenom","Discipline d'exercice Libellé":"discipline_exercice","Code du lieu d'affectation":"rne","Ville du lieu":"ville"},inplace=True)
+#suppression des lignes avec nom ou prénom manquants
+df_numens.dropna(axis=0,subset=['nom_usage','prenom','nom_patronymique'],inplace=True)
+#completion des valeurs na
+df_numens.discipline_exercice.fillna(value="NON RENSEIGNE",inplace=True)
+df_numens.rne.fillna(value="NON RENSEIGNE",inplace=True)
+df_numens.ville.fillna(value="NON RENSEIGNE",inplace=True)
+#nettoyage des colonnes : suppression des cedex, normalisation des noms et prenoms
+df_numens['ville']=df_numens.apply(lambda row:nettoyer_cedex(row['ville']),axis=1)
+df_numens['nom_usage']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_usage']),axis=1)
+df_numens['nom_patronymique']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_patronymique']),axis=1)
+df_numens['prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
 
+
+#ouverture du fichier liste à convoquer
+convocations = pd.read_excel('liste.xlsx')
+#transformation en dataframe
+df_convocations=pd.DataFrame(convocations)
+#renommage des colonnes
+df_convocations.rename(columns={'Nom':'nom',"Prenom":'prenom',"RNE":'rne',"Discipline":"discipline","Ville":"ville","Dispositif":"dispositif","Module":"module","Groupe":"groupe"},inplace=True)
+
+#verification que toutes les lignes comportent bien un nom et un prénom
+verif_nom = df_convocations.nom.isna()
+verif_prenom = df_convocations.prenom.isna()
+df_non_traitees = df_convocations[verif_nom | verif_prenom]
+
+#TODO identifier les non traitees
+#TODO ajouter les non traitees au fichier non trouvés
+
+#ne sont traitées que celles avec nom et prénom
+df_traitees = df_convocations[~verif_nom & ~verif_prenom]
+
+#nettoyage nom et prénom
+df_traitees['nom']=df_traitees.apply(lambda row:nettoyer_fichier(row['nom']),axis=1)
+df_traitees['prenom']=df_traitees.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
+
+#nettoyage des cedex 
+df_traitees['ville']=df_traitees.apply(lambda row:nettoyer_cedex(row['ville']),axis=1)
+
+#TODO transformation des df en liste de dictionnaires
 
 liste_titre_colonne = []
 personnes = []
