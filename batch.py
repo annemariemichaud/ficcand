@@ -103,11 +103,7 @@ for convocation in liste_convocations:
     #selon deux listes resultats faibles ou forts
     for numen in liste_numens:
             if (convocation['nom'] == numen['nom_usage'] or convocation['nom'] == numen['nom_patronymique']) and  convocation['prenom'] == numen['prenom']:
-                if convocation['discipline'] == numen['discipline_exercice']:
-                        resultat_fort.append(numen)
-                if convocation['rne'] == numen['rne'] and numen not in resultat_fort:
-                        resultat_fort.append(numen)
-                if convocation['ville'] == numen['ville'] and numen not in resultat_fort:
+                if convocation['discipline'] == numen['discipline_exercice'] or convocation['rne'] == numen['rne'] or convocation['ville'] == numen['ville']:
                         resultat_fort.append(numen)
                 if len(resultat_fort)==0:
                     resultat_non_trouve.append(numen)
