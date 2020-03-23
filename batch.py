@@ -72,12 +72,20 @@ except FileNotFoundError as fnf_error:
     
 #transformation en dataframe
 df_convocations=pd.DataFrame(convocations)
-
 try:
     #renommage des colonnes
     df_convocations.rename(columns={'Nom':'nom',"Prenom":'prenom',"RNE":'rne',"Discipline":"discipline","Ville":"ville","Dispositif":"dispositif","Module":"module","Groupe":"groupe"},inplace=True)
-
-    #completer les valeurs non renseignées
+    #vérification des colonnes optionnelles complétées
+    discipline = True
+    rne = True
+    ville = True
+    if df_convocations.discipline.isna().sum()==df_convocations.shape[0]:
+        discipline=False
+    if df_convocations.rne.isna().sum()==df_convocations.shape[0]:
+        rne=False
+    if df_convocations.ville.isna().sum()==df_convocations.shape[0]:
+        ville=False
+   #completer les valeurs non renseignées
     df_convocations.discipline.fillna(value="NON RENSEIGNE",inplace=True)
     df_convocations.rne.fillna(value="NON RENSEIGNE",inplace=True)
     df_convocations.ville.fillna(value="NON RENSEIGNE",inplace=True)
@@ -87,6 +95,7 @@ try:
     df_non_traitees = df_convocations[verif_nom | verif_prenom]
     df_non_traitees.prenom.fillna(value="NON RENSEIGNE",inplace=True)
     df_non_traitees.nom.fillna(value="NON RENSEIGNE",inplace=True)
+    #vérification des colonnes obligatoires dispositif, module et groupe
     if df_convocations.groupe.isna().sum()>0:
         handleError ('le numéro de groupe est obligatoire')
     if df_convocations.dispositif.isna().sum()>0:
@@ -127,20 +136,21 @@ global trouve
 trouve=0
 #résultat si tous les champs de la liste de personnes à convoquer concordent avec la liste des numens
 resultat_fort = []
-##résultat si certains champs de la liste de personnes à convoquer concordent avec la liste des numens
-resultat_non_trouve = []
 
-#chercher les personnes   
+#boucle chercher les personnes   
 for convocation in liste_convocations:
 
-    #selon deux listes resultats faibles ou forts
+    #comparaison
     for numen in liste_numens:
             if (convocation['nom'] == numen['nom_usage'] or convocation['nom'] == numen['nom_patronymique']) and  convocation['prenom'] == numen['prenom']:
-                if convocation['discipline'] == numen['discipline_exercice'] or convocation['rne'] == numen['rne'] or convocation['ville'] == numen['ville']:
+                if rne or ville or discipline:
+                    if convocation['discipline'] == numen['discipline_exercice'] or convocation['rne'] == numen['rne'] or convocation['ville'] == numen['ville']:
                         resultat_fort.append(numen)
-                if len(resultat_fort)==0:
-                    resultat_non_trouve.append(numen)
-                    
+                else:
+                     resultat_fort.append(numen)
+           
+        
+            
     #écriture des résultats dans les fichiers non trouvés, vérification et ficCandidat.unl
     if len(resultat_fort)==1:
         for numen in resultat_fort:
