@@ -1,6 +1,7 @@
 import pandas as pd
 import unicodedata
 import sys
+import datetime
 
 def nettoyer_cedex(valeur):
     if 'CEDEX' in valeur:
@@ -25,6 +26,13 @@ def nettoyer_fichier(valeur):
             valeur=valeur.replace('\'',' ')
     return valeur
 
+def handleError(message):
+    erreurFile.write(datetime.datetime.now().strftime("%d-%m-%Y %H:%M"))
+    erreurFile.write('\n')
+    erreurFile.write(message)
+    erreurFile.close()
+    sys.exit()
+    
 #écrire les erreurs dans un fichier erreur.txt
 erreurFile = open('erreur.txt', 'w')
     
@@ -32,9 +40,7 @@ erreurFile = open('erreur.txt', 'w')
 try:
     numens = pd.read_excel('tous_numen_simple.xlsx')
 except FileNotFoundError as fnf_error:
-    erreurFile.write('le fichier tous_numen_simple est introuvable \n')
-    erreurFile.close()
-    sys.exit()
+    handleError('le fichier tous_numen_simple est introuvable \n')
     
 #transformation en dataframe
 df_numens=pd.DataFrame(numens)
@@ -56,17 +62,13 @@ try:
     df_numens.loc[:,'nom_patronymique']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_patronymique']),axis=1)
     df_numens.loc[:,'prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
 except AttributeError:
-     erreurFile.write('le nom des colonnes ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
-     erreurFile.close()
-     sys.exit()
+    handleError('le nom des colonnes ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
 
 #ouverture du fichier liste à convoquer
 try:
     convocations = pd.read_excel('liste.xlsx')
 except FileNotFoundError as fnf_error:
-    erreurFile.write('le fichier liste.xlsx est introuvable \n')
-    erreurFile.close()
-    sys.exit()
+    handleError('le fichier liste.xlsx est introuvable \n')
     
 #transformation en dataframe
 df_convocations=pd.DataFrame(convocations)
