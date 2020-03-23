@@ -39,21 +39,26 @@ except FileNotFoundError as fnf_error:
 #transformation en dataframe
 df_numens=pd.DataFrame(numens)
 #renommage des colonnes
-df_numens.rename(columns={'Numen':'numen',"Nom d'usage":'nom_usage',"Nom patronymique":'nom_patronymique',"Prénom":"prenom","Discipline d'exercice Libellé":"discipline_exercice","Code du lieu d'affectation":"rne","Ville du lieu":"ville"},inplace=True)
-#suppression des lignes avec nom ou prénom manquants
-df_numens.dropna(axis=0,subset=['nom_usage','prenom','nom_patronymique'],inplace=True)
-#completion des valeurs na
-df_numens.discipline_exercice.fillna(value="NON RENSEIGNE",inplace=True)
-df_numens.rne.fillna(value="NON RENSEIGNE",inplace=True)
-df_numens.ville.fillna(value="NON RENSEIGNE",inplace=True)
+try:
+    df_numens.rename(columns={'Numen':'numen',"Nom d'usage":'nom_usage',"Nom patronymique":'nom_patronymique',"Prénom":"prenom","Discipline d'exercice Libellé":"discipline_exercice","Code du lieu d'affectation":"rne","Ville du lieu":"ville"},inplace=True)
+
+    #suppression des lignes avec nom ou prénom manquants
+    df_numens.dropna(axis=0,subset=['nom_usage','prenom','nom_patronymique'],inplace=True)
+    #completion des valeurs na
+    df_numens.discipline_exercice.fillna(value="NON RENSEIGNE",inplace=True)
+    df_numens.rne.fillna(value="NON RENSEIGNE",inplace=True)
+    df_numens.ville.fillna(value="NON RENSEIGNE",inplace=True)
 
 
-#nettoyage des colonnes : suppression des cedex, normalisation des noms et prenoms
-df_numens.loc[:,'ville']=df_numens.apply(lambda row:nettoyer_cedex(row['ville']),axis=1)
-df_numens.loc[:,'nom_usage']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_usage']),axis=1)
-df_numens.loc[:,'nom_patronymique']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_patronymique']),axis=1)
-df_numens.loc[:,'prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
-
+    #nettoyage des colonnes : suppression des cedex, normalisation des noms et prenoms
+    df_numens.loc[:,'ville']=df_numens.apply(lambda row:nettoyer_cedex(row['ville']),axis=1)
+    df_numens.loc[:,'nom_usage']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_usage']),axis=1)
+    df_numens.loc[:,'nom_patronymique']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_patronymique']),axis=1)
+    df_numens.loc[:,'prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
+except AttributeError:
+     erreurFile.write('le nom des colonnes ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
+     erreurFile.close()
+     sys.exit()
 
 #ouverture du fichier liste à convoquer
 try:
