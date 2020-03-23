@@ -1,11 +1,11 @@
 # ficcand
 
-##Objectifs du programme : 
+## Objectifs du programme : 
 L'utilisation du batch ficcand dans Gaia permet de retenir une liste de personnes.
 Ce batch nécessite de connaître les numens de personnes à convoquer.
 Lorsque ces numens ne sont pas connus, le programme ficcand permet de retrouver les numens des personnes à convoquer.
 
-##Principe de fonctionnement
+## Principe de fonctionnement
 Ce programme compare une liste de personnes à convoquer au format xlsx à la liste des personnels d'une académie extraite de Gaia par une requête BI4.
 Il identifie chaque personne à convoquer en cherchant les correspondances entre :
 * le nom d'usage (obligatoire)
