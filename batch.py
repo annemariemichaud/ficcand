@@ -62,7 +62,7 @@ try:
     df_numens.loc[:,'nom_patronymique']=df_numens.apply(lambda row:nettoyer_fichier(row['nom_patronymique']),axis=1)
     df_numens.loc[:,'prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['prenom']),axis=1)
 except AttributeError:
-    handleError('le nom des colonnes ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
+    handleError('le nom des colonnes de tous_numen_simple ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
 
 #ouverture du fichier liste à convoquer
 try:
@@ -72,19 +72,30 @@ except FileNotFoundError as fnf_error:
     
 #transformation en dataframe
 df_convocations=pd.DataFrame(convocations)
-#renommage des colonnes
-df_convocations.rename(columns={'Nom':'nom',"Prenom":'prenom',"RNE":'rne',"Discipline":"discipline","Ville":"ville","Dispositif":"dispositif","Module":"module","Groupe":"groupe"},inplace=True)
 
-#completer les valeurs non renseignées
-df_convocations.discipline.fillna(value="NON RENSEIGNE",inplace=True)
-df_convocations.rne.fillna(value="NON RENSEIGNE",inplace=True)
-df_convocations.ville.fillna(value="NON RENSEIGNE",inplace=True)
-#verification que toutes les lignes comportent bien un nom et un prénom
-verif_nom = df_convocations.nom.isna()
-verif_prenom = df_convocations.prenom.isna()
-df_non_traitees = df_convocations[verif_nom | verif_prenom]
-df_non_traitees.prenom.fillna(value="NON RENSEIGNE",inplace=True)
-df_non_traitees.nom.fillna(value="NON RENSEIGNE",inplace=True)
+try:
+    #renommage des colonnes
+    df_convocations.rename(columns={'Nom':'nom',"Prenom":'prenom',"RNE":'rne',"Discipline":"discipline","Ville":"ville","Dispositif":"dispositif","Module":"module","Groupe":"groupe"},inplace=True)
+
+    #completer les valeurs non renseignées
+    df_convocations.discipline.fillna(value="NON RENSEIGNE",inplace=True)
+    df_convocations.rne.fillna(value="NON RENSEIGNE",inplace=True)
+    df_convocations.ville.fillna(value="NON RENSEIGNE",inplace=True)
+    #verification que toutes les lignes comportent bien un nom et un prénom
+    verif_nom = df_convocations.nom.isna()
+    verif_prenom = df_convocations.prenom.isna()
+    df_non_traitees = df_convocations[verif_nom | verif_prenom]
+    df_non_traitees.prenom.fillna(value="NON RENSEIGNE",inplace=True)
+    df_non_traitees.nom.fillna(value="NON RENSEIGNE",inplace=True)
+    if df_convocations.groupe.isna().sum()>0:
+        handleError ('le numéro de groupe est obligatoire')
+    if df_convocations.dispositif.isna().sum()>0:
+        handleError('le numéro de dispositif est obligatoire')
+    if df_convocations.module.isna().sum()>0:
+        handleError('le numéro de module est obligatoire')
+except AttributeError:
+    handleError('le nom des colonnes de liste.xlsx ne correspond pas, reprendre les mêmes noms que dans le fichier modèle \n')
+
 #ajouter les non traitees à une liste de dictionnaire
 liste_non_traitees=df_non_traitees.to_dict('records')
 
