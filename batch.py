@@ -1,9 +1,9 @@
 import pandas as pd
 import unicodedata
+import sys
 
 def nettoyer_cedex(valeur):
     if 'CEDEX' in valeur:
-        print(valeur)
         valeur=valeur.replace('CEDEX','')
         valeur=valeur.strip()
     return valeur
@@ -25,8 +25,17 @@ def nettoyer_fichier(valeur):
             valeur=valeur.replace('\'',' ')
     return valeur
 
+#écrire les erreurs dans un fichier erreur.txt
+erreurFile = open('erreur.txt', 'w')
+    
 #ouverture du fichier tous numens
-numens = pd.read_excel('tous_numen_simple.xlsx')
+try:
+    numens = pd.read_excel('tous_numen_simple.xlsx')
+except FileNotFoundError as fnf_error:
+    erreurFile.write('le fichier tous_numen_simple est introuvable \n')
+    erreurFile.close()
+    sys.exit()
+    
 #transformation en dataframe
 df_numens=pd.DataFrame(numens)
 #renommage des colonnes
@@ -47,7 +56,13 @@ df_numens.loc[:,'prenom']=df_numens.apply(lambda row:nettoyer_fichier(row['preno
 
 
 #ouverture du fichier liste à convoquer
-convocations = pd.read_excel('liste.xlsx')
+try:
+    convocations = pd.read_excel('liste.xlsx')
+except FileNotFoundError as fnf_error:
+    erreurFile.write('le fichier liste.xlsx est introuvable \n')
+    erreurFile.close()
+    sys.exit()
+    
 #transformation en dataframe
 df_convocations=pd.DataFrame(convocations)
 #renommage des colonnes
@@ -145,7 +160,6 @@ for convocation in liste_convocations:
 if len(liste_non_traitees)>0:
     nontrouve_File = open('nontrouve.txt','a')
     for convocation in liste_non_traitees:
-        print(convocation)
         if convocation['nom'] =="NON RENSEIGNE":
             nontrouve_File.write('Candidat non trouvé car pas de nom indiqué \n')
             candidature = convocation['nom']  + ' ' +  convocation['prenom']
@@ -161,3 +175,4 @@ if len(liste_non_traitees)>0:
 ficCandidatFile.close()
 nontrouve_File.close()
 verificationFile.close()
+erreurFile.close()
