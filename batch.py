@@ -155,30 +155,24 @@ for convocation in liste_convocations:
     if len(resultat_fort)==1:
         for numen in resultat_fort:
             #ajout du numen dans ficCandidat
-            candidature = numen['numen'] + '|' + str(convocation['dispositif']) + '|' + str(convocation['module']) + '|' + str(convocation['groupe']).rjust(2,'0') + '|R|\n'
+            candidature=f"{numen['numen']}|{str(convocation['dispositif'])}|{str(convocation['module'])}|{str(convocation['groupe']).rjust(2,'0')}|R|\n"
             ficCandidatFile.write(candidature)
             #ajout du numen dans verification
-            verification = numen['numen'] + ' ' + numen['nom_usage'] + ' ' + ' ' + numen['prenom'] + ' ' +  numen['discipline_exercice'] + '\n'
+            verification=f"{numen['numen']} {numen['nom_usage']} {numen['prenom']} {numen['discipline_exercice']} \n"
             verificationFile.write(verification)
 
 #cas ou plusieurs candidats
     if len(resultat_fort)>1 :
-        ficCandidatFile.write('Plusieurs candidats possibles pour ' + convocation['nom'] + ' ' + convocation['prenom'] + '\n')
+        ficCandidatFile.write(f"Plusieurs candidats possibles pour {convocation['nom']} {convocation['prenom']} \n")
 
         for numen in resultat_fort:
-            candidature = numen['numen'] + '|' + str(convocation['dispositif']) + '|'
-            candidature = candidature + str(convocation['module']) + '|'
-            candidature = candidature + str(convocation['groupe']).rjust(2,'0') + '|R|' + ' ' + numen['nom_usage'] + ' ' + numen['prenom'] + ' ' + numen['discipline'] + ' ' + numen['rne'] + ' ' + numen['ville'] + '\n'
+            candidature = f"{numen['numen']}|{str(convocation['dispositif'])}|{str(convocation['module'])}|{str(convocation['groupe']).rjust(2,'0')}|R| {numen['nom_usage']} {numen['prenom']} {numen['discipline']} {numen['rne']} {numen['ville']} \n"
             nontrouve_File.write(candidature)
 
 #cas sans convocation trouvée
     if len(resultat_fort)==0:
         nontrouve_File.write('Candidat non trouvé \n')
-        candidature = convocation['nom'] + ' ' + convocation['prenom']
-        candidature = candidature + ' ' + str(convocation ['discipline'])
-        candidature = candidature    + ' ' + convocation['rne']
-        candidature = candidature + ' ' + convocation['ville']
-        candidature = candidature + '\n'
+        candidature = f"{convocation['nom']} {convocation['prenom']} {str(convocation ['discipline'])} {convocation['rne']} {convocation['ville']} \n"
         nontrouve_File.write(candidature)
 
     resultat_fort = []
@@ -190,13 +184,11 @@ if len(liste_non_traitees)>0:
     for convocation in liste_non_traitees:
         if convocation['nom'] =="NON RENSEIGNE":
             nontrouve_File.write('Candidat non trouvé car pas de nom indiqué \n')
-            candidature = convocation['nom']  + ' ' +  convocation['prenom']
-            candidature = candidature + '\n'
+            candidature = f"{convocation['nom']} {convocation['prenom']} \n"
             nontrouve_File.write(candidature)
         if convocation['prenom']=="NON RENSEIGNE":
             nontrouve_File.write('Candidat non trouvé car pas de prénom indiqué \n')
-            candidature = convocation['nom']  + ' ' +  convocation['prenom']
-            candidature = candidature + '\n'
+            candidature = f"{convocation['nom']} {convocation['prenom']} \n"
             nontrouve_File.write(candidature)
 
 
